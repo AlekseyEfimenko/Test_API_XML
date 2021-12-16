@@ -3,7 +3,7 @@
 <suite name="All Test Suite">
     <test verbose="2" name="a2.efimenko_T4">
         <classes>
-            <class name="com.steps.tests.TestAPI">
+            <class name="com.steps.tests.TestApi">
                 <methods>
                     <include name="testGet"/>
                 </methods>

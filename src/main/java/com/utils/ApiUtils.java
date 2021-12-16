@@ -1,25 +1,23 @@
 package com.utils;
 
-import com.pojo.Catalog;
-import io.restassured.http.ContentType;
 import io.restassured.internal.path.xml.NodeChildrenImpl;
 import io.restassured.response.Response;
 import io.restassured.RestAssured;
 import org.apache.log4j.Logger;
 import java.util.stream.IntStream;
 
-public class APIUtils {
+public class ApiUtils {
     private static final String BASE_PATH = Config.getInstance().getStartURL();
-    private static final Logger LOGGER = Logger.getLogger(APIUtils.class);
-    private static APIUtils instance;
+    private static final Logger LOGGER = Logger.getLogger(ApiUtils.class);
+    private static ApiUtils instance;
     private Response response;
     private NodeChildrenImpl books;
 
-    private APIUtils() {}
+    private ApiUtils() {}
 
-    public static APIUtils getInstance() {
+    public static ApiUtils getInstance() {
         if (instance == null) {
-            instance = new APIUtils();
+            instance = new ApiUtils();
         }
         return instance;
     }
@@ -33,12 +31,12 @@ public class APIUtils {
         return response.getStatusCode();
     }
 
-    public void checkContentType(ContentType format) {
-        response.then().assertThat().contentType(format);
+    public String getContentType() {
+        return response.contentType().split(";")[0];
     }
 
-    public Catalog getCatalog() {
-        return response.xmlPath().getObject("$", Catalog.class);
+    public <T> T getCatalog(Class<T> cl, String target) {
+        return RestAssured.when().get(BASE_PATH + target).xmlPath().getObject("$", cl);
     }
 
     public String[] getArrayOfAttributes(String attr) {
@@ -53,3 +51,4 @@ public class APIUtils {
         books = response.then().extract().path(Config.getInstance().getProperties("books"));
     }
 }
+
