@@ -1,12 +1,11 @@
 package com.pojo;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class Catalog {
-    @Getter @Setter private List<Book> book = new ArrayList<>();
+    private List<Book> book = new ArrayList<>();
 }
 

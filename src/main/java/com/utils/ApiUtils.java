@@ -1,14 +1,18 @@
 package com.utils;
 
+import io.restassured.filter.Filter;
+import io.restassured.filter.FilterContext;
 import io.restassured.internal.path.xml.NodeChildrenImpl;
 import io.restassured.response.Response;
 import io.restassured.RestAssured;
+import io.restassured.specification.FilterableRequestSpecification;
+import io.restassured.specification.FilterableResponseSpecification;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import java.util.stream.IntStream;
 
 public class ApiUtils {
     private static final String BASE_PATH = Config.getInstance().getStartURL();
-    private static final Logger LOGGER = Logger.getLogger(ApiUtils.class);
     private static ApiUtils instance;
     private Response response;
     private NodeChildrenImpl books;
@@ -18,6 +22,7 @@ public class ApiUtils {
     public static ApiUtils getInstance() {
         if (instance == null) {
             instance = new ApiUtils();
+            RestAssured.filters(new MyRequestFilter());
         }
         return instance;
     }
@@ -27,7 +32,6 @@ public class ApiUtils {
     }
 
     public int getStatusCode() {
-        LOGGER.info("Get Status code of request");
         return response.getStatusCode();
     }
 
@@ -49,6 +53,26 @@ public class ApiUtils {
 
     private void setListOfBooks() {
         books = response.then().extract().path(Config.getInstance().getProperties("books"));
+    }
+
+    static class MyRequestFilter implements Filter {
+
+        private static final Logger LOGGER = Logger.getLogger(MyRequestFilter.class.getName());
+
+        @Override
+        public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
+            Response response = ctx.next(requestSpec, responseSpec);
+            if (requestSpec.getMethod().equals("GET")) {
+                LOGGER.info("Getting request from " + requestSpec.getURI());
+            } else if (requestSpec.getMethod().equals("POST")) {
+                LOGGER.info("Post request to " + requestSpec.getURI());
+            }
+            LOGGER.info("Status code of request is: " + response.statusCode());
+            if (response.statusCode() >= 400) {
+                LOGGER.log(Level.ERROR, requestSpec.getURI() + " => " + response.getStatusLine());
+            }
+            return response;
+        }
     }
 }
 

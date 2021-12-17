@@ -3,10 +3,13 @@ package com.steps;
 import static com.utils.MyAssert.myAssertEquals;
 import static com.utils.MyAssert.myAssertNotEquals;
 import static com.utils.MyAssert.myAssertTrue;
+import com.pojo.Book;
 import com.pojo.Catalog;
 import com.utils.ApiUtils;
 import org.apache.log4j.Logger;
-import java.util.stream.IntStream;
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class TestSteps {
     private static final Logger LOGGER = Logger.getLogger(TestSteps.class);
@@ -60,18 +63,15 @@ public class TestSteps {
 
     private void setMinAndMaxPrice(Catalog catalog) {
         LOGGER.info("Looking for max and min price");
-        maxPrice = catalog.getBook().get(0).getPrice();
-        minPrice = catalog.getBook().get(0).getPrice();
-        IntStream intStream = IntStream.range(0, catalog.getBook().size());
-        intStream.forEach(i -> {
-            double temp = catalog.getBook().get(i).getPrice();
-            if (temp > maxPrice) {
-                maxPrice = temp;
-            }
-            if (temp < minPrice) {
-                minPrice = temp;
-            }
-        });
+        List<Book> books = catalog.getBook();
+        Book minByPrice = books.stream()
+                .min(Comparator.comparing(Book::getPrice))
+                .orElseThrow(NoSuchElementException::new);
+        Book maxByPrice = books.stream()
+                .max(Comparator.comparing(Book::getPrice))
+                .orElseThrow(NoSuchElementException::new);
+        maxPrice = maxByPrice.getPrice();
+        minPrice = minByPrice.getPrice();
     }
 }
 
